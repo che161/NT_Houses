@@ -457,12 +457,13 @@ ggsave("fig/Figure_1.png", plot = figure1)
 
 #Dwelling number in Climatezone 
 bindAll_Houses
-by_Climate <- group_by(bindAll_Houses, NClimateZone) %>%
+by_Climate1 <- group_by(bindAll_Houses, NClimateZone) %>%
   summarise(DwellingNo = n()) %>% 
   filter(DwellingNo > 29)
-by_Climate2 <- by_Climate %>% inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
+by_Climate2 <- by_Climate1 %>% inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
 by_Climate <- by_Climate2
 by_Climate
+ClimateZoneSelected <- select(by_Climate,NClimateZone)
 #view(by_Climate)
 # Using ggplot2
 figure2 <- ggplot(
@@ -484,23 +485,29 @@ ggsave("fig/Figure_2.png", plot = figure2)
 
 #Dwelling number in Climatezone and construction
 bindAll_Houses
-by_walltype <- group_by(bindAll_Houses, NClimateZone,WallType) %>%
-  summarise(DwellingNo = n()) %>% 
-  filter(DwellingNo > 29)
+by_walltype <- bindAll_Houses %>% semi_join(ClimateZoneSelected, by = "NClimateZone") %>% 
+  group_by(NClimateZone,WallType) %>%
+  summarise(DwellingNo = n()) 
 by_walltype2 <- by_walltype %>% inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
 by_walltype <- by_walltype2
 by_walltype
-view(by_walltype)
+#view(by_walltype)
 
 #Dwelling number in Climatezone and Building Class
 bindAll_Houses
-by_Class <- group_by(bindAll_Houses, NClimateZone,Class) %>%
-  summarise(DwellingNo = n()) %>% 
-  filter(DwellingNo > 29)
+by_Class <- bindAll_Houses %>% semi_join(ClimateZoneSelected, by = "NClimateZone") %>%
+  group_by(NClimateZone,Class) %>%
+  summarise(DwellingNo = n()) 
 by_Class2 <- by_Class %>% inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
 by_Class <- by_Class2
 by_Class
-view(by_Class)
+#view(by_Class)
 
-
+#Dwelling number in State and Star rating
+bindAll_Houses
+by_StarRating <- bindAll_Houses %>% semi_join(ClimateZoneSelected, by = "NClimateZone") %>%
+  group_by(StateName,StarRating) %>%
+  summarise(DwellingNo = n())
+by_StarRating
+#view(by_StarRating)
 
