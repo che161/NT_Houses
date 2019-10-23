@@ -420,54 +420,28 @@ overheat_houses_NSW
 bindAll <- bind_rows(overheat_houses_NT, overheat_houses_SA, 
                      overheat_houses_TAS, overheat_houses_QLD,
                      overheat_houses_WA,overheat_houses_ACT,
-                     overheat_houses_NSW) 
-bindAll
-bindAll_Diff <- bindAll %>% select(StarDiff)
-bindAll_Diff
-bindAll_Diff <- format(round(bindAll_Diff,1)) %>% 
-  write_csv("res/Result2_Orig_Clean_AllState.csv")
-bindAll_State <- bindAll %>% select(State)
-bindAll_State 
-bindAll_Diff
-bindAll_State$StarDiff <- bindAll_Diff$StarDiff
-bindAll_State 
+                     overheat_houses_VIC, overheat_houses_NSW) 
+#Now combine with BCA climate zone
+BCA_CZs <- read.csv("data/BCA_NatHERS_CZs.csv")
+BCA_CZs
+#view(BCA_CZs)
+bindAll2 <- bindAll %>% inner_join(BCA_CZs, by = "CZ")
+bindAll <- bindAll2
 
-allstate <- bindAll_State 
-bindAll_State %>% write_csv("res/Result2_Orig_Clean_AllState.csv")
-bindAll_State
-?format.data.frame
+bindAll
+bindAll_Houses <- bindAll %>% 
+  write_csv("res/Result2_AllState.csv")
+
 #cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 #CCCCCCCCCCCCCCCCCCCC          PLOT         ccccccccccccccccccccccccccccccccccccccccccccccccccccc
-#allstate <- read.csv("res/Result2_Orig_Clean_AllState.csv") 
-#allstate
-#view(allstate)
-allstate <- allstate %>% mutate(StarDiff = as.numeric(StarDiff))
-abs_allstate <- allstate %>% mutate(AbsDiff = abs(StarDiff))
-abs_allstate
-by_state <- group_by(abs_allstate, by = State)
+#Dwelling number in States 
+
+by_state <- group_by(bindAll_Houses, StateName) %>% summarise(DwellingNo = n() ) 
 by_state
-
-diff <- allstate %>% group_by(State) %>% mutate(AbsDiff = abs(StarDiff)) %>% 
-  summarise(MaxStarDiff= max(StarDiff), MinStarDiff= min(StarDiff),MeanStarDiff= mean(StarDiff),MeanAbsStarDiff= mean(AbsDiff) )
-diff
-allstate %>% summarise(n(),mean(StarDiff))
-allstate
-number_dwellings <- allstate %>% group_by(State) %>% summarise(DwellingNo = n() )
-number_dwellings
-
-stardiff <- group_by(allstate, State, StarDiff) %>% summarise(DwellingNo = n() )
-stardiff 
-
-?as.numeric
-
-#view(stardiff)
-averagediff <- group_by(abs_allstate, State) %>% summarise(MeanStarDiff= mean(StarDiff),MeanAbsStarDiff= mean(AbsDiff) ) 
-averagediff
-averagediff %>% summarise(mean(MeanStarDiff))
 # Using ggplot2
 figure1 <- ggplot(
-  data = number_dwellings, 
-  mapping = aes(x = State, y = DwellingNo,  label = DwellingNo,
+  data = by_state, 
+  mapping = aes(x = StateName, y = DwellingNo,  label = DwellingNo,
                 col.lab="red", cex.axis = 3, cex.lab = 4)
 ) +
   geom_col(fill = "green", width = 0.5) +
@@ -476,79 +450,57 @@ figure1 <- ggplot(
        x = "State",
        y = "Number of Dwellings"
   ) +
-  ylim(0, 20000) +
+  ylim(0, 23000) +
   theme(axis.title = element_text(colour = "red", face = "bold", size = 18))
 figure1  
 ggsave("fig/Figure_1.png", plot = figure1)
 
-
-# Plot the figure in two groups due to large number of houses in VIC and NSW
-stardiff
-stardiff_VIC_NSW <- stardiff %>% filter(State =="VIC"|State =="NSW")
-stardiff_OtherStates <- stardiff %>% filter(State !="VIC",State !="NSW")
-figure2a <- ggplot(
-  data = stardiff_VIC_NSW, 
-  mapping = aes(x = StarDiff, y = DwellingNo, group = State)
-) +
-  geom_col(fill = "green",width = 0.05) +   
-  geom_text(aes(label = DwellingNo), colour = "blue", vjust = -0.15, fontface = "bold", size = 4) +
-  labs(title = "Figure 2a. Star rating difference distribution in each State",
-       x = "Star Rating Difference",
-       y = "Number of Dwellings"
-  ) +
-  ylim(0, 4000) +
-  theme(axis.title = element_text(colour = "red", face = "bold", size = 18))+
-  facet_wrap( ~ State)
-figure2a
-ggsave("fig/Figure_2a.png", plot = figure2a)
-
-figure2b <- ggplot(
-  data = stardiff_OtherStates, 
-  mapping = aes(x = StarDiff, y = DwellingNo, group = State)
-) +
-  geom_col(fill = "green",width = 0.05) +   
-  geom_text(aes(label = DwellingNo), colour = "blue", vjust = -0.15, fontface = "bold", size = 4) +
-  labs(title = "Figure 2. Star rating difference distribution in each State",
-       x = "Star Rating Difference",
-       y = "Number of Dwellings"
-  ) +
-  ylim(0, 250) +
-  theme(axis.title = element_text(colour = "red", face = "bold", size = 18))+
-  facet_wrap( ~ State)
-figure2b
-ggsave("fig/Figure_2b.png", plot = figure2b)
-
-#plot averaged absolute star rating difference
-
-figure3 <- ggplot(
-  data = averagediff, 
-  mapping = aes(x = State, y = MeanAbsStarDiff, label = sprintf("%.02f %%", MeanAbsStarDiff),
-                col.lab="red", cex.axis = 3, cex.lab = 4, fontface = "bold")
+#Dwelling number in Climatezone 
+bindAll_Houses
+by_Climate <- group_by(bindAll_Houses, NClimateZone) %>%
+  summarise(DwellingNo = n()) %>% 
+  filter(DwellingNo > 29)
+by_Climate2 <- by_Climate %>% inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
+by_Climate <- by_Climate2
+by_Climate
+#view(by_Climate)
+# Using ggplot2
+figure2 <- ggplot(
+  data = by_Climate, 
+  mapping = aes(x = NClimateZone, y = DwellingNo,  label = BCA_CZ,
+                col.lab="red", cex.axis = 3, cex.lab = 4)
 ) +
   geom_col(fill = "green", width = 0.5) +
-  geom_text(aes(label = sprintf("%.03f", MeanAbsStarDiff)), colour ="blue", vjust = -0.5) +
-  labs(title = "Figure 3. Mean ABSOLUTE star raing difference in each State",
+  geom_text(aes(label = BCA_CZ), colour = "red", vjust = -0.5, fontface = "bold") +
+  labs(title = "Figure 2. Number of dwellings simmulated in climate zone",
        x = "State",
-       y = "Mean Star Rating Difference"
-  ) + 
-  ylim(0, 0.24) +
+       y = "Number of Dwellings"
+  ) +
+  ylim(0, 13000) +
   theme(axis.title = element_text(colour = "red", face = "bold", size = 18))
-figure3  
-ggsave("fig/Figure_3.png", plot = figure3)
+figure2
+ggsave("fig/Figure_2.png", plot = figure2)
 
-#plot averaged star rating difference
-figure4 <- ggplot(
-  data = averagediff, 
-  mapping = aes(x = State, y = MeanStarDiff, label = sprintf("%.02f %%", MeanStarDiff),
-                col.lab="red", cex.axis = 3, cex.lab = 4, fontface = "bold")
-) +
-  geom_col(fill = "green", width = 0.5) +
-  geom_text(aes(label = sprintf("%.03f", MeanStarDiff)), colour ="blue", vjust = -0.5) +
-  labs(title = "Figure 4. Mean star raing difference in each State",
-       x = "State",
-       y = "Mean Star Rating Difference"
-  ) + 
-  ylim(-0.16, 0.16) +
-  theme(axis.title = element_text(colour = "red", face = "bold", size = 18))
-figure4  
-ggsave("fig/Figure_4.png", plot = figure4)
+
+#Dwelling number in Climatezone and construction
+bindAll_Houses
+by_walltype <- group_by(bindAll_Houses, NClimateZone,WallType) %>%
+  summarise(DwellingNo = n()) %>% 
+  filter(DwellingNo > 29)
+by_walltype2 <- by_walltype %>% inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
+by_walltype <- by_walltype2
+by_walltype
+view(by_walltype)
+
+#Dwelling number in Climatezone and Building Class
+bindAll_Houses
+by_Class <- group_by(bindAll_Houses, NClimateZone,Class) %>%
+  summarise(DwellingNo = n()) %>% 
+  filter(DwellingNo > 29)
+by_Class2 <- by_Class %>% inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
+by_Class <- by_Class2
+by_Class
+view(by_Class)
+
+
+
