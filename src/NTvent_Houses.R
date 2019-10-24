@@ -387,11 +387,12 @@ overheatorig_clean <- overheatcsv_orig %>% semi_join(validRow, by = "Nvalid") %>
 
 
 overheatorig_clean2 <- overheatorig_clean %>% filter(StarRating != "*****",StarRating != "0" ) %>%
-  filter(StarRating != "0" ) %>%
+  filter(StarRating != "0" ) %>% 
   mutate(StarRating = as.numeric(StarRating), CertificateLCool = as.numeric(CertificateLCool)) %>% 
   mutate(CertificateSCool = as.numeric(CertificateSCool)) %>%
   mutate(CertificateHeating = as.numeric(CertificateHeating)) %>%  
-  mutate(NumberofBedrooms = as.numeric(NumberofBedrooms)) %>%    
+  mutate(NumberofBedrooms = as.numeric(NumberofBedrooms)) %>%   
+  filter(NumberofBedrooms != "NA" ) %>%   
   filter(StarRating > 0.1 ) %>%  filter(StarRating < 10.1 ) %>% 
   write_csv("res/NSW/Result2_Orig_Clean.csv")
 
@@ -417,10 +418,11 @@ overheat_houses_NSW
 #cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 #CCCCCCCCCCCCCCCCCCCC     Merge clean data  ccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-bindAll <- bind_rows(overheat_houses_NT, overheat_houses_SA, 
-                     overheat_houses_TAS, overheat_houses_QLD,
-                     overheat_houses_WA,overheat_houses_ACT,
-                     overheat_houses_VIC, overheat_houses_NSW) 
+
+bindAll <- bind_rows(overheat_houses_ACT, overheat_houses_NSW,
+                     overheat_houses_NT, overheat_houses_QLD, 
+                     overheat_houses_SA, overheat_houses_TAS,
+                     overheat_houses_VIC, overheat_houses_WA) 
 #Now combine with BCA climate zone
 BCA_CZs <- read.csv("data/BCA_NatHERS_CZs.csv")
 BCA_CZs
@@ -434,10 +436,28 @@ bindAll_Houses <- bindAll %>%
 
 #cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 #CCCCCCCCCCCCCCCCCCCC          PLOT         ccccccccccccccccccccccccccccccccccccccccccccccccccccc
-#Dwelling number in States 
 
-by_state <- group_by(bindAll_Houses, StateName) %>% summarise(DwellingNo = n() ) 
+#Dwelling number in Climatezone 
+bindAll_Houses
+by_Climate1 <- group_by(bindAll_Houses, NClimateZone) %>%
+  summarise(DwellingNo = n()) %>% 
+  filter(DwellingNo > 29)
+by_Climate2 <- by_Climate1 %>% inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
+by_Climate <- by_Climate2 %>% 
+  write_csv("res/By_ClimateZone.csv")
+by_Climate
+ClimateZoneSelected <- select(by_Climate,NClimateZone)
+#view(by_Climate)
+
+
+#Dwelling number in States 
+library(dplyr)
+by_state <- bindAll_Houses %>% semi_join(ClimateZoneSelected, by = "NClimateZone") %>% 
+  group_by(StateName) %>%  
+  summarise(DwellingNo = n() ) %>% 
+  write_csv("res/By_State.csv")
 by_state
+
 # Using ggplot2
 figure1 <- ggplot(
   data = by_state, 
@@ -455,16 +475,9 @@ figure1 <- ggplot(
 figure1  
 ggsave("fig/Figure_1.png", plot = figure1)
 
-#Dwelling number in Climatezone 
-bindAll_Houses
-by_Climate1 <- group_by(bindAll_Houses, NClimateZone) %>%
-  summarise(DwellingNo = n()) %>% 
-  filter(DwellingNo > 29)
-by_Climate2 <- by_Climate1 %>% inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
-by_Climate <- by_Climate2
-by_Climate
-ClimateZoneSelected <- select(by_Climate,NClimateZone)
-#view(by_Climate)
+?sort
+
+
 # Using ggplot2
 figure2 <- ggplot(
   data = by_Climate, 
@@ -489,7 +502,8 @@ by_walltype <- bindAll_Houses %>% semi_join(ClimateZoneSelected, by = "NClimateZ
   group_by(NClimateZone,WallType) %>%
   summarise(DwellingNo = n()) 
 by_walltype2 <- by_walltype %>% inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
-by_walltype <- by_walltype2
+by_walltype <- by_walltype2 %>% 
+  write_csv("res/By_Walltype.csv")
 by_walltype
 #view(by_walltype)
 
@@ -499,7 +513,8 @@ by_Class <- bindAll_Houses %>% semi_join(ClimateZoneSelected, by = "NClimateZone
   group_by(NClimateZone,Class) %>%
   summarise(DwellingNo = n()) 
 by_Class2 <- by_Class %>% inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
-by_Class <- by_Class2
+by_Class <- by_Class2 %>% 
+  write_csv("res/By_BuildingClass.csv")
 by_Class
 #view(by_Class)
 
@@ -507,7 +522,15 @@ by_Class
 bindAll_Houses
 by_StarRating <- bindAll_Houses %>% semi_join(ClimateZoneSelected, by = "NClimateZone") %>%
   group_by(StateName,StarRating) %>%
-  summarise(DwellingNo = n())
+  summarise(DwellingNo = n()) %>% 
+  write_csv("res/By_StarRating.csv")
+by_StarRating
+by_StarRating2 <-  subset(by_StarRating,select =StarRating)
+by_StarRating2
+by_StarRating2 <- format(round(by_StarRating2,1)) %>% 
+  write_csv("res/By_StarRating2.csv")
+
+
 by_StarRating
 #view(by_StarRating)
 
