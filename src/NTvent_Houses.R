@@ -466,7 +466,7 @@ figure1 <- ggplot(
 ) +
   geom_col(fill = "green", width = 0.5) +
   geom_text(aes(label = DwellingNo), colour ="blue", vjust = -0.5, fontface = "bold") +
-  labs(title = "Figure 1. Number of dwellings simmulated in each State",
+  labs(title = "Figure 1. Number of dwellings used in this study in each State",
        x = "State",
        y = "Number of Dwellings"
   ) +
@@ -476,6 +476,7 @@ figure1
 ggsave("fig/Figure_1.png", plot = figure1)
 
 ?sort
+
 
 
 # Using ggplot2
@@ -507,6 +508,14 @@ by_walltype <- by_walltype2 %>%
 by_walltype
 #view(by_walltype)
 
+by_walltype_Sprd <- by_walltype %>% spread(key = WallType, value = DwellingNo, fill = "") %>% 
+  write_csv("res/By_Walltype_sprd.csv")
+
+by_walltype_Sprd
+
+
+?spread
+
 #Dwelling number in Climatezone and Building Class
 bindAll_Houses
 by_Class <- bindAll_Houses %>% semi_join(ClimateZoneSelected, by = "NClimateZone") %>%
@@ -518,19 +527,66 @@ by_Class <- by_Class2 %>%
 by_Class
 #view(by_Class)
 
+by_Class_Sprd <- by_Class %>% spread(key = Class, value = DwellingNo, fill = "") %>% 
+  write_csv("res/By_BuildingClass_sprd.csv")
+
+by_Class_Sprd
+
+
+
+
 #Dwelling number in State and Star rating
 bindAll_Houses
-by_StarRating <- bindAll_Houses %>% semi_join(ClimateZoneSelected, by = "NClimateZone") %>%
+RbindAll_Houses <- bindAll_Houses %>% mutate(StarRating = round(StarRating,0))
+by_StarRating <- RbindAll_Houses %>% semi_join(ClimateZoneSelected, by = "NClimateZone") %>%
   group_by(StateName,StarRating) %>%
   summarise(DwellingNo = n()) %>% 
-  write_csv("res/By_StarRating.csv")
+  write_csv("res/By_StarRating.csv")  
 by_StarRating
-by_StarRating2 <-  subset(by_StarRating,select =StarRating)
-by_StarRating2
-by_StarRating2 <- format(round(by_StarRating2,1)) %>% 
-  write_csv("res/By_StarRating2.csv")
+
+by_StarRating_VIC_NSW <- by_StarRating %>% filter(StateName =="     VIC"|StateName =="     NSW")
+by_StarRating_OtherStates <- by_StarRating %>% filter(StateName !="     VIC",StateName !="     NSW")
+by_StarRating_VIC_NSW
+by_StarRating_OtherStates
 
 
+figure3a <- ggplot(
+  data = by_StarRating_VIC_NSW, 
+  mapping = aes(x = StarRating, y = DwellingNo, group = StateName)
+) +
+  geom_col(fill = "green",width = 0.25) +   
+  geom_text(aes(label = DwellingNo), colour = "blue", vjust = -0.15, fontface = "bold", size = 4) +
+  labs(title = "Figure 5a. Star rating distributions in NSW and VIC dwellings",
+       x = "Star Rating",
+       y = "Number of Dwellings"
+  ) +
+  scale_x_continuous(breaks=seq(0, 10, 1)) +
+  ylim(0, 10000) +
+  theme(axis.title = element_text(colour = "red", face = "bold", size = 18))+
+  facet_wrap( ~ StateName)
+figure3a
+ggsave("fig/Figure_3a.png", plot = figure3a)
+
+?axisTicks
+
+figure3b <- ggplot(
+  data = by_StarRating_OtherStates, 
+  mapping = aes(x = StarRating, y = DwellingNo, group = StateName)
+) +
+  geom_col(fill = "green",width = 0.25) +   
+  geom_text(aes(label = DwellingNo), colour = "blue", vjust = -0.15, fontface = "bold", size = 4) +
+  labs(title = "Figure 5b. Star rating distributions in other states and territories dwellings",
+       x = "Star Rating",
+       y = "Number of Dwellings"
+  ) + 
+  scale_x_continuous(breaks=seq(0, 10, 1)) +
+  ylim(0, 250) +
+  theme(axis.title = element_text(colour = "red", face = "bold", size = 18))+
+  facet_wrap( ~ StateName)
+figure3b
+ggsave("fig/Figure_3b.png", plot = figure3b)
+
 by_StarRating
+ 
 #view(by_StarRating)
 
