@@ -4,13 +4,13 @@ library(tidyverse)
 #CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 # Clean data for NT
 # First read in Result2.txt which contains the information for all houses collected from the state 
-overheat_result2 <- read_fwf("data/NT/Result2.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2 <- read_fwf("data/NT/Result2.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
         StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
         CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 
 # Second read in Result2_error.txt which contains the information for all houses collected from the state
 # which has issues in the data 
-overheat_result2_error <- read_fwf("data/NT/Result2_error.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2_error <- read_fwf("data/NT/Result2_error.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
         StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
         CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 overheat_result2
@@ -21,7 +21,7 @@ validRow <- overheat_result2 %>%
   anti_join(overheat_result2_error, by = "ScratchName" ) %>% select("Nvalid")
 validRow
 
-# Now read in the performance data for each house using the existing window model in the state
+# Now read in the performance data for each house for star rating information in the state
 overheatcsv_orig <- read.csv("data/NT/Result2_Orig.csv", header = FALSE, col.names = c(
   "Nvalid", "StateName", "NPostCode", "NYear", "NClimateZone", "StarRating", 
   "Exposure","X", "CertificateHeating", "CertificateSCool", "CertificateLCool","TotalFlArea", 
@@ -50,15 +50,84 @@ overheat_houses_error <- filter(overheat_houses, CZ != NClimateZone ) %>%
 overheat_houses_NT <- overheat_houses
 overheat_houses_NT
 
+##############################################################################
+# now read in simulation results for Overheating in houses
+overheatcsv_rst3 <- read.csv("data/NT/Result3.csv", header = FALSE, col.names = c(
+  "Nvalid", "WFR", "Overheat", "Kit", 
+  "LivR01", "LivR02", "LivR03","LivR04","LivR05",
+  "LivR06", "LivR07", "LivR08","LivR09","LivR10",
+  "BedRD01", "BedRD02", "BedRD03","BedRD04","BedRD05",
+  "BedRD06", "BedRD07", "BedRD08","BedRD09","BedRD10",
+  "BedRN01", "BedRN02", "BedRN03","BedRN04","BedRN05",
+  "BedRN06", "BedRN07", "BedRN08","BedRN09","BedRN10"  
+))
+overheatcsv_rst3
+
+overheatcsv_rst3B <- read.csv("data/NT/Result3B.csv", header = FALSE, col.names = c(
+  "Nvalid", "WFR", "OverheatB", "KitB", 
+  "LivR01B", "LivR02B", "LivR03B","LivR04B","LivR05B",
+  "LivR06B", "LivR07B", "LivR08B","LivR09B","LivR10B",
+  "BedRD01B", "BedRD02B", "BedRD03B","BedRD04B","BedRD05B",
+  "BedRD06B", "BedRD07B", "BedRD08B","BedRD09B","BedRD10B",
+  "BedRN01B", "BedRN02B", "BedRN03B","BedRN04B","BedRN05B",
+  "BedRN06B", "BedRN07B", "BedRN08B","BedRN09B","BedRN10B"  
+))
+overheatcsv_rst3B
+
+overheatcsv_rst3_clean <- overheatcsv_rst3 %>% semi_join(validRow, by = "Nvalid") %>%
+  write_csv("res/NT/Result3_Clean.csv")
+overheatcsv_rst3B_clean <- overheatcsv_rst3B %>% semi_join(validRow, by = "Nvalid") %>%
+  write_csv("res/NT/Result3B_Clean.csv")
+
+# now read in houses insulation and direction information
+overheatcsv_rst4 <- read.csv("data/NT/Result4.csv", header = FALSE, col.names = c(
+  "Nvalid", "WallR", "CeilingR", "RoofR", "KitWD",
+  "LivWD01", "LivWD02", "LivWD03","LivWD04","LivWD05",
+  "LivWD06", "LivWD07", "LivWD08","LivWD09","LivWD10",
+  "BedWD01", "BedWD02", "BedWD03","BedWD04","BedWD05",
+  "BedWD06", "BedWD07", "BedWD08","BedWD09","BedWD10"
+))
+
+overheatcsv_rst4
+overheatcsv_rst4_clean <- overheatcsv_rst4 %>% semi_join(validRow, by = "Nvalid") %>%
+  write_csv("res/NT/Result4_Clean.csv")
+
+# now read in overheatnig for houses using different temperature criteria
+overheatcsv_cool01 <- read.csv("data/NT/Result4.csv", header = FALSE, col.names = c(
+  "Nvalid", "tJanNeutral", "OverDayH", "OverNightH","Kit", 
+  "LivR01", "LivR02", "LivR03","LivR04","LivR05",
+  "LivR06", "LivR07", "LivR08","LivR09","LivR10",
+  "BedRD01", "BedRD02", "BedRD03","BedRD04","BedRD05",
+  "BedRD06", "BedRD07", "BedRD08","BedRD09","BedRD10",
+  "BedRN01", "BedRN02", "BedRN03","BedRN04","BedRN05",
+  "BedRN06", "BedRN07", "BedRN08","BedRN09","BedRN10"  
+))
+
+overheatcsv_cool01
+overheatcsv_cool01_clean <- overheatcsv_cool01 %>% semi_join(validRow, by = "Nvalid") %>%
+  write_csv("res/NT/Resultcool01_Clean.csv")
+
+
+
+
+
+
+
+
+
+##################################################################
+
+
+
 # Clean data for ACT
 # First read in Result2.txt which contains the information for all houses collected from the state 
-overheat_result2 <- read_fwf("data/ACT/Result2.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2 <- read_fwf("data/ACT/Result2.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                             StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                             CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 
 # Second read in Result2_error.txt which contains the information for all houses collected from the state
 # which has issues in the data 
-overheat_result2_error <- read_fwf("data/ACT/Result2_error.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2_error <- read_fwf("data/ACT/Result2_error.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                                         StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                                         CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 overheat_result2
@@ -100,13 +169,13 @@ overheat_houses_ACT
 
 # Clean data for TAS
 # First read in Result2.txt which contains the information for all houses collected from the state 
-overheat_result2 <- read_fwf("data/TAS/Result2.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2 <- read_fwf("data/TAS/Result2.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                              StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                              CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 
 # Second read in Result2_error.txt which contains the information for all houses collected from the state
 # which has issues in the data 
-overheat_result2_error <- read_fwf("data/TAS/Result2_error.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2_error <- read_fwf("data/TAS/Result2_error.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                                          StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                                          CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 overheat_result2
@@ -148,13 +217,13 @@ overheat_houses_TAS
 
 # Clean data for SA
 # First read in Result2.txt which contains the information for all houses collected from the state 
-overheat_result2 <- read_fwf("data/SA/Result2.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2 <- read_fwf("data/SA/Result2.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                              StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                              CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 
 # Second read in Result2_error.txt which contains the information for all houses collected from the state
 # which has issues in the data 
-overheat_result2_error <- read_fwf("data/SA/Result2_error.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2_error <- read_fwf("data/SA/Result2_error.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                                          StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                                          CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 overheat_result2
@@ -196,13 +265,13 @@ overheat_houses_SA
 
 # Clean data for WA
 # First read in Result2.txt which contains the information for all houses collected from the state 
-overheat_result2 <- read_fwf("data/WA/Result2.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2 <- read_fwf("data/WA/Result2.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                              StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                              CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 
 # Second read in Result2_error.txt which contains the information for all houses collected from the state
 # which has issues in the data 
-overheat_result2_error <- read_fwf("data/WA/Result2_error.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2_error <- read_fwf("data/WA/Result2_error.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                                          StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                                          CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 overheat_result2
@@ -244,13 +313,13 @@ overheat_houses_WA
 
 # Clean data for QLD
 # First read in Result2.txt which contains the information for all houses collected from the state 
-overheat_result2 <- read_fwf("data/QLD/Result2.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2 <- read_fwf("data/QLD/Result2.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                              StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                              CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 
 # Second read in Result2_error.txt which contains the information for all houses collected from the state
 # which has issues in the data 
-overheat_result2_error <- read_fwf("data/QLD/Result2_error.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2_error <- read_fwf("data/QLD/Result2_error.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                                          StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                                          CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 overheat_result2
@@ -292,20 +361,20 @@ overheat_houses_QLD
 
 # Clean data for VIC
 # First read in Result2.txt which contains the information for all houses collected from the state 
-overheat_result2 <- read_fwf("data/VIC/Result2.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2 <- read_fwf("data/VIC/Result2.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                              StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                              CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 
 # Second read in Result2_error.txt which contains the information for all houses collected from the state
 # which has issues in the data 
-overheat_result2_error <- read_fwf("data/VIC/Result2_error.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2_error <- read_fwf("data/VIC/Result2_error.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                                          StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                                          CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 
 
 # Third read in Result2_error2.txt which contains the information for all houses collected from the state
 # which has issues in star rating
-overheat_result2_error2 <- read_fwf("data/VIC/Result2_error2.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2_error2 <- read_fwf("data/VIC/Result2_error2.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                                          StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                                          CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 overheat_result2
@@ -364,18 +433,18 @@ overheat_houses_VIC
 
 # Clean data for NSW
 # First read in Result2.txt which contains the information for all houses collected from the state 
-overheat_result2 <- read_fwf("data/NSW/Result2.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2 <- read_fwf("data/NSW/Result2.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                              StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                              CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 
 # Second read in Result2_error.txt which contains the information for all houses collected from the state
 # which has issues in the data 
-overheat_result2_error <- read_fwf("data/NSW/Result2_error.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2_error <- read_fwf("data/NSW/Result2_error.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                                          StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                                          CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 # Second read in Result2_error.txt which contains the information for all houses collected from the state
 # which has issues in the data 
-overheat_result2_error2 <- read_fwf("data/NSW/Result2_error2.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+overheat_result2_error2 <- read_fwf("data/NSW/Result2_error2.txt",header = FALSE,fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                                          StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                                          CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 
@@ -608,4 +677,5 @@ ggsave("fig/Figure_3b.png", plot = figure3b)
 by_StarRating
  
 #view(by_StarRating)
+
 
