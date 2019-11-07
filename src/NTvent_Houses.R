@@ -124,17 +124,6 @@ overheatcsv_cool02_clean <- overheatcsv_cool02 %>% semi_join(validRow, by = "Nva
   write_csv("res/NT/Resultcool02_Clean.csv")
 
 
-overheatcsv_cool01 <- read.csv("data/NT/Resultcool01.csv", header = FALSE, col.names = c(
-  "Nvalid", "tJanNeutral", "OverDayH", "OverNightH","Kit", 
-  "LivR01", "LivR02", "LivR03","LivR04","LivR05",
-  "LivR06", "LivR07", "LivR08","LivR09","LivR10",
-  "BedRD01", "BedRD02", "BedRD03","BedRD04","BedRD05",
-  "BedRD06", "BedRD07", "BedRD08","BedRD09","BedRD10",
-  "BedRN01", "BedRN02", "BedRN03","BedRN04","BedRN05",
-  "BedRN06", "BedRN07", "BedRN08","BedRN09","BedRN10"  
-))
-
-
 
 
 
