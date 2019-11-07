@@ -65,7 +65,7 @@ overheatcsv_rst3 <- read.csv("data/NT/Result3.csv", header = FALSE, col.names = 
 overheatcsv_rst3
 
 overheatcsv_rst3B <- read.csv("data/NT/Result3B.csv", header = FALSE, col.names = c(
-  "Nvalid", "WFR", "OverheatB", "KitB", 
+  "Nvalid", "WFRB", "OverheatB", "KitB", 
   "LivR01B", "LivR02B", "LivR03B","LivR04B","LivR05B",
   "LivR06B", "LivR07B", "LivR08B","LivR09B","LivR10B",
   "BedRD01B", "BedRD02B", "BedRD03B","BedRD04B","BedRD05B",
@@ -93,7 +93,28 @@ overheatcsv_rst4
 overheatcsv_rst4_clean <- overheatcsv_rst4 %>% semi_join(validRow, by = "Nvalid") %>%
   write_csv("res/NT/Result4_Clean.csv")
 
-# now read in overheatnig for houses using different temperature criteria
+# Merge the data
+overheat_houses_NT
+overheatcsv_rst3
+overheatcsv_rst3B
+overheatcsv_rst4
+overheat_houses_join <- overheat_houses_NT %>% 
+  inner_join(overheatcsv_rst3, by = "Nvalid") %>%
+  inner_join(overheatcsv_rst3B, by = "Nvalid") %>%
+  inner_join(overheatcsv_rst4,  by = "Nvalid") %>%
+  write_csv("res/NT/Result2_Houses_join.csv")
+
+overheat_houses_join_NT <- overheat_houses_join
+overheat_houses_join_NT
+by_Climate <- group_by(overheat_houses_join_NT, NClimateZone) %>%
+  summarise(DwellingNo = n())
+by_Climate
+
+
+
+#mutate(CZ = as.numeric(CZ), NClimateZone = as.numeric(NClimateZone) ) %>% 
+
+# now read in overheating for houses using different temperature criteria
 overheatcsv_cool01 <- read.csv("data/NT/Resultcool01.csv", header = FALSE, col.names = c(
   "Nvalid", "tJanNeutral", "OverDayH", "OverNightH","Kit", 
   "LivR01", "LivR02", "LivR03","LivR04","LivR05",
