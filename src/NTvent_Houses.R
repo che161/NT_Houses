@@ -301,12 +301,22 @@ overheat_result2 <- read_fwf("data/VIC/Result2.txt",fwf_cols(Nvalid = 7, UnitNo 
 overheat_result2_error <- read_fwf("data/VIC/Result2_error.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                                          StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                                          CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
+
+
+# Third read in Result2_error2.txt which contains the information for all houses collected from the state
+# which has issues in star rating
+overheat_result2_error2 <- read_fwf("data/VIC/Result2_error2.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+                                                                         StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
+                                                                         CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
 overheat_result2
 overheat_result2_error
+overheat_result2_error2
 
 # Figure out the those house numbers which do not have issues. 
 validRow <- overheat_result2 %>% 
-  anti_join(overheat_result2_error, by = "ScratchName" ) %>% select("Nvalid")
+  anti_join(overheat_result2_error, by = "ScratchName" ) %>% 
+  anti_join(overheat_result2_error2, by = "ScratchName" ) %>%  
+  select("Nvalid")
 validRow
 
 # Now read in the performance data for each house using the existing window model in the state
@@ -363,12 +373,21 @@ overheat_result2 <- read_fwf("data/NSW/Result2.txt",fwf_cols(Nvalid = 7, UnitNo 
 overheat_result2_error <- read_fwf("data/NSW/Result2_error.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
                                                                          StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
                                                                          CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
+# Second read in Result2_error.txt which contains the information for all houses collected from the state
+# which has issues in the data 
+overheat_result2_error2 <- read_fwf("data/NSW/Result2_error2.txt",fwf_cols(Nvalid = 7, UnitNo = 8, 
+                                                                         StreetNo = 8, StreetType = 16, StreetName = 48, Suburb = 24, WallType = 20,
+                                                                         CZ = 2, BL = 1,SubDir = 97,  ScrachDM = 8, Class =1, ScratchName = NA)) 
+
 overheat_result2
 overheat_result2_error
+overheat_result2_error2
 
 # Figure out the those house numbers which do not have issues. 
 validRow <- overheat_result2 %>% 
-  anti_join(overheat_result2_error, by = "ScratchName" ) %>% select("Nvalid")
+  anti_join(overheat_result2_error, by = "ScratchName" ) %>% 
+  anti_join(overheat_result2_error2, by = "ScratchName" ) %>%
+  select("Nvalid")
 validRow
 
 # Now read in the performance data for each house using the existing window model in the state
