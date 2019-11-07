@@ -106,9 +106,7 @@ overheat_houses_join <- overheat_houses_NT %>%
 
 overheat_houses_join_NT <- overheat_houses_join
 overheat_houses_join_NT
-by_Climate <- group_by(overheat_houses_join_NT, NClimateZone) %>%
-  summarise(DwellingNo = n())
-by_Climate
+#-------------------------------------------------------------------------#
 
 
 
@@ -196,7 +194,7 @@ overheat_houses <- overheatorig_clean %>% inner_join(walltype, by = "Nvalid") %>
 
 overheat_houses_error <- filter(overheat_houses, CZ != NClimateZone ) %>% 
   write_csv("res/ACT/error.csv") 
-# Assign to a NT data form
+# Assign to a ACT data form
 overheat_houses_ACT <- overheat_houses
 overheat_houses_ACT
 
@@ -244,7 +242,7 @@ overheat_houses <- overheatorig_clean %>% inner_join(walltype, by = "Nvalid") %>
 
 overheat_houses_error <- filter(overheat_houses, CZ != NClimateZone ) %>% 
   write_csv("res/TAS/error.csv") 
-# Assign to a NT data form
+# Assign to a TAS data form
 overheat_houses_TAS <- overheat_houses
 overheat_houses_TAS
 
@@ -292,7 +290,7 @@ overheat_houses <- overheatorig_clean %>% inner_join(walltype, by = "Nvalid") %>
 
 overheat_houses_error <- filter(overheat_houses, CZ != NClimateZone ) %>% 
   write_csv("res/SA/error.csv") 
-# Assign to a NT data form
+# Assign to a SA data form
 overheat_houses_SA <- overheat_houses
 overheat_houses_SA
 
@@ -340,7 +338,7 @@ overheat_houses <- overheatorig_clean %>% inner_join(walltype, by = "Nvalid") %>
 
 overheat_houses_error <- filter(overheat_houses, CZ != NClimateZone ) %>% 
   write_csv("res/WA/error.csv") 
-# Assign to a NT data form
+# Assign to a WA data form
 overheat_houses_WA <- overheat_houses
 overheat_houses_WA
 
@@ -388,9 +386,65 @@ overheat_houses <- overheatorig_clean %>% inner_join(walltype, by = "Nvalid") %>
 
 overheat_houses_error <- filter(overheat_houses, CZ != NClimateZone ) %>% 
   write_csv("res/QLD/error.csv") 
-# Assign to a NT data form
+# Assign to a QLD data form
 overheat_houses_QLD <- overheat_houses
 overheat_houses_QLD
+##############################################################################
+# now read in simulation results for Overheating in houses
+overheatcsv_rst3 <- read.csv("data/QLD/Result3.csv", header = FALSE, col.names = c(
+  "Nvalid", "WFR", "Overheat", "Kit", 
+  "LivR01", "LivR02", "LivR03","LivR04","LivR05",
+  "LivR06", "LivR07", "LivR08","LivR09","LivR10",
+  "BedRD01", "BedRD02", "BedRD03","BedRD04","BedRD05",
+  "BedRD06", "BedRD07", "BedRD08","BedRD09","BedRD10",
+  "BedRN01", "BedRN02", "BedRN03","BedRN04","BedRN05",
+  "BedRN06", "BedRN07", "BedRN08","BedRN09","BedRN10"  
+))
+overheatcsv_rst3
+
+overheatcsv_rst3B <- read.csv("data/QLD/Result3B.csv", header = FALSE, col.names = c(
+  "Nvalid", "WFRB", "OverheatB", "KitB", 
+  "LivR01B", "LivR02B", "LivR03B","LivR04B","LivR05B",
+  "LivR06B", "LivR07B", "LivR08B","LivR09B","LivR10B",
+  "BedRD01B", "BedRD02B", "BedRD03B","BedRD04B","BedRD05B",
+  "BedRD06B", "BedRD07B", "BedRD08B","BedRD09B","BedRD10B",
+  "BedRN01B", "BedRN02B", "BedRN03B","BedRN04B","BedRN05B",
+  "BedRN06B", "BedRN07B", "BedRN08B","BedRN09B","BedRN10B"  
+))
+overheatcsv_rst3B
+
+overheatcsv_rst3_clean <- overheatcsv_rst3 %>% semi_join(validRow, by = "Nvalid") %>%
+  write_csv("res/QLD/Result3_Clean.csv")
+overheatcsv_rst3B_clean <- overheatcsv_rst3B %>% semi_join(validRow, by = "Nvalid") %>%
+  write_csv("res/QLD/Result3B_Clean.csv")
+
+# now read in houses insulation and direction information
+overheatcsv_rst4 <- read.csv("data/QLD/Result4.csv", header = FALSE, col.names = c(
+  "Nvalid", "WallR", "CeilingR", "RoofR", "KitWD",
+  "LivWD01", "LivWD02", "LivWD03","LivWD04","LivWD05",
+  "LivWD06", "LivWD07", "LivWD08","LivWD09","LivWD10",
+  "BedWD01", "BedWD02", "BedWD03","BedWD04","BedWD05",
+  "BedWD06", "BedWD07", "BedWD08","BedWD09","BedWD10"
+))
+
+overheatcsv_rst4
+overheatcsv_rst4_clean <- overheatcsv_rst4 %>% semi_join(validRow, by = "Nvalid") %>%
+  write_csv("res/QLD/Result4_Clean.csv")
+
+# Merge the data
+overheat_houses_QLD
+overheatcsv_rst3
+overheatcsv_rst3B
+overheatcsv_rst4
+overheat_houses_join <- overheat_houses_QLD %>% 
+  inner_join(overheatcsv_rst3, by = "Nvalid") %>%
+  inner_join(overheatcsv_rst3B, by = "Nvalid") %>%
+  inner_join(overheatcsv_rst4,  by = "Nvalid") %>%
+  write_csv("res/QLD/Result2_Houses_join.csv")
+
+overheat_houses_join_QLD <- overheat_houses_join
+overheat_houses_join_QLD
+#-------------------------------------------------------------------------#
 
 # Clean data for VIC
 # First read in Result2.txt which contains the information for all houses collected from the state 
@@ -460,7 +514,7 @@ overheat_houses <- overheatorig_clean %>% inner_join(walltype, by = "Nvalid") %>
 
 overheat_houses_error <- filter(overheat_houses, CZ != NClimateZone ) %>% 
   write_csv("res/VIC/error.csv") 
-# Assign to a NT data form
+# Assign to a VIC data form
 overheat_houses_VIC <- overheat_houses
 overheat_houses_VIC
 
@@ -532,7 +586,7 @@ overheat_houses <- overheatorig_clean %>% inner_join(walltype, by = "Nvalid") %>
 
 overheat_houses_error <- filter(overheat_houses, CZ != NClimateZone ) %>% 
   write_csv("res/NSW/error.csv") 
-# Assign to a NT data form
+# Assign to a NSW data form
 overheat_houses_NSW <- overheat_houses
 overheat_houses_NSW
 #view(overheat_houses_VIC)
