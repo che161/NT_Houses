@@ -1154,9 +1154,31 @@ bindAll_Overheat_CZSelected %>%
   write_csv("res/Result_Overheat_AllState_CZSelected2.csv")
 #by climate zone
 bindAll_Overheat_CZSelected_byCZ <- group_by(bindAll_Overheat_CZSelected,NClimateZone)
+bindAll_Overheat_CZSelected_byCZ
 
+bindAll_Overheat_CZSelected_byCZ %>% 
+  ggplot(aes(x=StarRating, y = maxday)) +
+  geom_point() +
+  geom_smooth(method = "lm") + 
+  facet_wrap( ~ NClimateZone)
 
+bindAll_Overheat_CZSelected_byCZ %>% 
+  ggplot(aes(x=StarRating, y = maxnight)) +
+  geom_point() +
+  geom_smooth(method = "lm") + 
+  facet_wrap( ~ NClimateZone)
 
+bindAll_Overheat_CZSelected_byCZ %>% 
+  ggplot(aes(x=Exposure, y = maxday)) +
+  geom_point() +
+  geom_smooth(method = "lm") + 
+  facet_wrap( ~ NClimateZone)
+
+bindAll_Overheat_CZSelected_byCZ %>% 
+  ggplot(aes(x=Exposure, y = maxnight)) +
+  geom_point() +
+  geom_smooth(method = "lm") + 
+  facet_wrap( ~ NClimateZone)
 
 
 OH_by_CZ <- bindAll_Overheat_CZSelected_byCZ %>% summarise(OHDwellingNo = n())  %>% 
