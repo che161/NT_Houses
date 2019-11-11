@@ -997,7 +997,7 @@ by_Climate <- by_Climate2 %>%
 by_Climate
 ClimateZoneSelected <- select(by_Climate,NClimateZone)
 #view(by_Climate)
-
+ClimateZoneSelected
 
 #Dwelling number in States 
 library(dplyr)
@@ -1136,4 +1136,32 @@ by_StarRating
  
 #view(by_StarRating)
 
+#cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+#CCCCCCCCCCCCCCCCCCCC          PLOT for overheating        ccccccccccc
+
+bindAll_Overheat_Houses
+#Dwelling number in Climatezone 
+bindAll_Overheat_CZSelected <- bindAll_Overheat_Houses %>% 
+  semi_join(ClimateZoneSelected, by = "NClimateZone") %>% 
+  write_csv("res/Result_Overheat_AllState_CZSelected.csv")
+bindAll_Overheat_CZSelected
+?apply
+
+bindAll_Overheat_CZSelected[,"maxday"] <- apply(bindAll_Overheat_CZSelected[,31:51], 1, max) 
+bindAll_Overheat_CZSelected[,"maxnight"] <- apply(bindAll_Overheat_CZSelected[,52:61], 1, max)
+
+bindAll_Overheat_CZSelected %>% 
+  write_csv("res/Result_Overheat_AllState_CZSelected2.csv")
+#by climate zone
+bindAll_Overheat_CZSelected_byCZ <- group_by(bindAll_Overheat_CZSelected,NClimateZone)
+
+
+
+
+
+OH_by_CZ <- bindAll_Overheat_CZSelected_byCZ %>% summarise(OHDwellingNo = n())  %>% 
+  spread(key = "Overheat", value = "OHDwellingNo", fill = 0) %>% 
+  mutate(OH_percent = `TRUE`/(`FALSE`+`TRUE`)) %>% 
+  inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
+OH_by_CZ
 
