@@ -1145,7 +1145,38 @@ bindAll_Overheat_CZSelected <- bindAll_Overheat_Houses %>%
   semi_join(ClimateZoneSelected, by = "NClimateZone") %>% 
   write_csv("res/Result_Overheat_AllState_CZSelected.csv")
 bindAll_Overheat_CZSelected
-?apply
+
+OH_select <- select(bindAll_Overheat_CZSelected,maxday,
+                    NClimateZone,StarRating,WFR,WallR,CeilingR,RoofR) %>% scale
+head(OH_select)
+OH_pca <- prcomp(OH_select)
+summary(OH_pca)
+plot(OH_pca)
+OH_select <- select(bindAll_Overheat_CZSelected,maxday,
+                    BCA_CZ,StarRating,WFR,WallR,CeilingR,RoofR)
+lm(maxday ~ ., data = OH_select) %>% 
+  summary()
+
+?lm
+
+
+
+mtcars
+mtcars_scaled <- select(mtcars, -mpg, -am, -vs) %>% scale
+?scale
+head(mtcars_scaled)
+mtcars_pca <- prcomp(mtcars_scaled)
+
+summary(mtcars_pca)
+plot(mtcars_pca)
+
+
+
+
+
+
+
+
 
 bindAll_Overheat_CZSelected[,"maxday"] <- apply(bindAll_Overheat_CZSelected[,31:51], 1, max) 
 bindAll_Overheat_CZSelected[,"maxnight"] <- apply(bindAll_Overheat_CZSelected[,52:61], 1, max)
