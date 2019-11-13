@@ -1076,11 +1076,11 @@ by_Class <- by_Class2 %>%
 by_Class
 #view(by_Class)
 
-by_Class_Sprd <- by_Class %>% spread(key = Class, value = DwellingNo, fill = "") %>% 
+by_Class_Sprd <- by_Class %>% spread(key = Class, value = DwellingNo, fill = 0) %>% 
   write_csv("res/By_BuildingClass_sprd.csv")
 
 by_Class_Sprd
-
+#view(by_Class_Sprd)
 #Dwelling number in State and Star rating
 bindAll_Houses
 RbindAll_Houses <- bindAll_Houses %>% mutate(StarRating = round(StarRating,0))
@@ -1140,35 +1140,58 @@ by_StarRating
 #CCCCCCCCCCCCCCCCCCCC          PLOT for overheating        ccccccccccc
 
 bindAll_Overheat_Houses
+# Plot for Overheating % for each State
+bindAll_Overheat_Houses_State <- bindAll_Overheat_Houses %>% 
+  group_by(StateName,Overheat) %>% 
+  summarise(OHDwellingNo = n())  %>% 
+  spread(key = "Overheat", value = "OHDwellingNo", fill = 0) %>% 
+  mutate(OH_percent = `TRUE`/(`FALSE`+`TRUE`))
+bindAll_Overheat_Houses_State
+figure4 <- ggplot(
+  data = bindAll_Overheat_Houses_State, 
+  mapping = aes(x = StateName, y = OH_percent,  label = OH_percent,
+                col.lab="red", cex.axis = 3, cex.lab = 4)
+) +
+  geom_col(fill = "green", width = 0.5) +
+  geom_text(aes(label = sprintf("%.03f", OH_percent)), colour ="blue", vjust = -0.3, fontface = "bold") +
+  labs(title = "Figure 4. Dwellings fail the overheating criteria in each State",
+       x = "State",
+       y = "Dwellings fail overheat criteria (%)"
+  ) +
+  ylim(0, 1) +
+  theme(axis.title = element_text(colour = "red", face = "bold", size = 18))
+figure4  
+ggsave("fig/Figure_4.png", plot = figure4) 
+
+# Plot for Overheating % for each Climate zone
+bindAll_Overheat_Houses_NClimateZone <- bindAll_Overheat_Houses %>% 
+  group_by(NClimateZone,Overheat) %>% 
+  summarise(OHDwellingNo = n())  %>% 
+  spread(key = "Overheat", value = "OHDwellingNo", fill = 0) %>% 
+  mutate(OH_percent = `TRUE`/(`FALSE`+`TRUE`))
+bindAll_Overheat_Houses_NClimateZone
+figure5 <- ggplot(
+  data = bindAll_Overheat_Houses_NClimateZone, 
+  mapping = aes(x = NClimateZone, y = OH_percent,  label = OH_percent,
+                col.lab="red", cex.axis = 3, cex.lab = 4)
+) +
+  geom_col(fill = "green", width = 0.5) +
+  geom_text(aes(label = sprintf("%.02f", OH_percent)), colour ="blue", vjust = -0.3, fontface = "bold") +
+  labs(title = "Figure 5. Dwellings fail the overheating criteria in each CZ",
+       x = "State",
+       y = "Dwellings fail overheat criteria (%)"
+  ) +
+  ylim(0, 1) +
+  theme(axis.title = element_text(colour = "red", face = "bold", size = 18))
+figure5  
+ggsave("fig/Figure_5.png", plot = figure5) 
+
+  
 #Dwelling number in Climatezone 
 bindAll_Overheat_CZSelected <- bindAll_Overheat_Houses %>% 
   semi_join(ClimateZoneSelected, by = "NClimateZone") %>% 
   write_csv("res/Result_Overheat_AllState_CZSelected.csv")
 bindAll_Overheat_CZSelected
-
-OH_select <- select(bindAll_Overheat_CZSelected,maxday,
-                    NClimateZone,StarRating,WFR,WallR,CeilingR,RoofR) %>% scale
-head(OH_select)
-OH_pca <- prcomp(OH_select)
-summary(OH_pca)
-plot(OH_pca)
-OH_select <- select(bindAll_Overheat_CZSelected,maxday,
-                    BCA_CZ,StarRating,WFR,WallR,CeilingR,RoofR)
-lm(maxday ~ ., data = OH_select) %>% 
-  summary()
-
-?lm
-
-
-
-mtcars
-mtcars_scaled <- select(mtcars, -mpg, -am, -vs) %>% scale
-?scale
-head(mtcars_scaled)
-mtcars_pca <- prcomp(mtcars_scaled)
-
-summary(mtcars_pca)
-plot(mtcars_pca)
 
 
 
@@ -1211,10 +1234,39 @@ bindAll_Overheat_CZSelected_byCZ %>%
   geom_smooth(method = "lm") + 
   facet_wrap( ~ NClimateZone)
 
-
-OH_by_CZ <- bindAll_Overheat_CZSelected_byCZ %>% summarise(OHDwellingNo = n())  %>% 
+bindAll_Overheat_CZSelected_byCZ
+head(bindAll_Overheat_CZSelected_byCZ)
+OH_by_CZ <- bindAll_Overheat_CZSelected_byCZ %>% 
+  group_by(NClimateZone,Overheat) %>% 
+  summarise(OHDwellingNo = n())  %>% 
   spread(key = "Overheat", value = "OHDwellingNo", fill = 0) %>% 
   mutate(OH_percent = `TRUE`/(`FALSE`+`TRUE`)) %>% 
   inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
 OH_by_CZ
 
+
+OH_select <- select(bindAll_Overheat_CZSelected,maxday,
+                    NClimateZone,StarRating,WFR,WallR,CeilingR,RoofR) %>% scale
+
+OH_select_28 <- select(bindAll_Overheat_CZSelected,maxday,
+                       NClimateZone,StarRating,WFR,WallR,CeilingR,RoofR) %>% 
+                       filter(NClimateZone == 56)
+
+OH_select_28
+OH_select_28_byStar <- OH_select_28 %>% group_by(StarRating) %>% 
+  summarise(maxdaymean = mean(maxday))
+OH_select_28_byStar
+OH_select_28_byStar %>% 
+  ggplot(aes(x=StarRating, y = maxdaymean)) +
+  geom_point() 
+
+#head(OH_select)
+OH_pca <- prcomp(OH_select_28)
+summary(OH_pca)
+plot(OH_pca)
+lm(maxday ~ ., data = OH_select_28) %>% 
+  summary()
+OH_01 <- lm(maxday ~ CeilingR, data = OH_select_28)
+  summary()
+plot(OH_01)
+?lm
