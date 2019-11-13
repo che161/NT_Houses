@@ -1193,16 +1193,10 @@ bindAll_Overheat_CZSelected <- bindAll_Overheat_Houses %>%
   write_csv("res/Result_Overheat_AllState_CZSelected.csv")
 bindAll_Overheat_CZSelected
 
-
-
-
-
-
-
-
-
-bindAll_Overheat_CZSelected[,"maxday"] <- apply(bindAll_Overheat_CZSelected[,31:51], 1, max) 
-bindAll_Overheat_CZSelected[,"maxnight"] <- apply(bindAll_Overheat_CZSelected[,52:61], 1, max)
+bindAll_Overheat_CZSelected[,"maxday"] <- 
+  apply(bindAll_Overheat_CZSelected[,31:51], 1, max) 
+bindAll_Overheat_CZSelected[,"maxnight"] <- 
+  apply(bindAll_Overheat_CZSelected[,52:61], 1, max)
 
 bindAll_Overheat_CZSelected %>% 
   write_csv("res/Result_Overheat_AllState_CZSelected2.csv")
@@ -1244,33 +1238,47 @@ OH_by_CZ <- bindAll_Overheat_CZSelected_byCZ %>%
   inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
 OH_by_CZ
 bindAll_Overheat_Houses
-
-OH_select <- select(bindAll_Overheat_CZSelected,maxday,Tmean,Tmax,Tmin,
+bindAll_Overheat_CZSelected_byCZ
+OH_select <- select(bindAll_Overheat_CZSelected,maxday,CertificateSCool,
+                    TotFloorArea,SlabOnGroundArea, SubfloorFloorArea, 
+                    NStorey,Class,Tmean,Tmax,Tmin,
                     NClimateZone,StarRating,WFR,WallR,CeilingR,RoofR)
+OH_select$CeilingR <- replace(OH_select$CeilingR, OH_select$CeilingR==99, 0)
+OH_select$RoofR <- replace(OH_select$RoofR, OH_select$RoofR==99, 0)
 
-OH_select %>% 
-  ggplot(aes(x=Tmax, y = maxday)) +
-  geom_point() 
+
+OH_select
+OH_select_2 <- OH_select %>% group_by(NClimateZone) %>% 
+  summarise(Tmaxmean= mean(Tmax),maxdaymean = mean(maxday)) 
+OH_select_2
+OH_select_2 %>%   ggplot(aes(x=Tmaxmean, y = maxdaymean)) +
+  geom_point()
+OH_select_2 %>%   ggplot(aes(x=Tmaxmean, y = maxdaymean)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+OH_select_2 %>%   ggplot(aes(x=Tmaxmean, y = maxdaymean)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ poly(x,2))
+
+?geom_smooth
 
 res1 <- cor.test(OH_select$Tmax, OH_select$maxday,
                  method = "spearman", conf.level = 0.95,continuity = FALSE)
 res1
 
-
-
-OH_select_28 <- select(bindAll_Overheat_CZSelected,maxday,Tmean,Tmax,Tmin,
+OH_select_28 <- select(OH_select,maxday,CertificateSCool,
+                       TotFloorArea,SlabOnGroundArea, SubfloorFloorArea, 
+                       NStorey,Class,Tmean,Tmax,Tmin,
                        NClimateZone,StarRating,WFR,WallR,CeilingR,RoofR) %>% 
                        filter(NClimateZone == 56)
 
-
-
-OH_select_28_2 <- select(OH_select_28,StarRating) %>% 
+OH_select_28_2 <- select(OH_select_28,StarRating,maxday) %>% 
   filter(StarRating > 3.0, StarRating < 10.1)
 
 OH_select_28_2 
 #view(OH_select_28_2)
 ?cor.test
-res2 <- cor.test(OH_select_28_2$StarRating, OH_select_28_2$maxday,
+res2 <- cor.test(OH_select_28$StarRating, OH_select_28$maxday,
                  method = "spearman", conf.level = 0.95,continuity = FALSE)
 res2
 
@@ -1282,13 +1290,48 @@ OH_select_28_byStar %>%
   ggplot(aes(x=StarRating, y = maxdaymean)) +
   geom_point() 
 
+OH_select_28_CeilingR <- OH_select_28 %>% group_by(CeilingR) %>% 
+  summarise(maxdaymean = mean(maxday))
+OH_select_28_CeilingR
+OH_select_28_CeilingR %>% 
+  ggplot(aes(x=CeilingR, y = maxdaymean)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+OH_01_CeilingR <- lm(maxday ~ CeilingR, data = OH_select_28)
+summary()
+plot(OH_01_CeilingR)
+install.packages("ggpubr")
+library("ggpubr")
+
+OH_select_28_byR <- OH_select_28 %>% mutate(CeilingR = CeilingR + RoofR) %>% 
+  group_by(CeilingR) %>% 
+  summarise(meanR = mean(CeilingR), meanROH=mean(maxday))
+
+ggscatter(OH_select_28, x = "CeilingR", y = "maxday", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "CeilingR", ylab = "Max OH hours")
+ggscatter(OH_select_28_byR, x = "meanR", y = "meanROH", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "CeilingR", ylab = "Max OH hours")
+
+?nls
 #head(OH_select)
 OH_pca <- prcomp(OH_select_28)
 summary(OH_pca)
 plot(OH_pca)
 lm(maxday ~ ., data = OH_select_28) %>% 
   summary()
-OH_01 <- lm(maxday ~ StarRating, data = OH_select_28)
+
+
+lm(maxday ~ ., data = OH_select_28) %>% 
+  summary()  
+OH_select_28
+
+
+OH_01 <- lm(maxday ~ StarRating, data = OH_select_28) %>% 
   summary()
 plot(OH_01)
 ?lm
