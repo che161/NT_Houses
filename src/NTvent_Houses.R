@@ -1243,17 +1243,39 @@ OH_by_CZ <- bindAll_Overheat_CZSelected_byCZ %>%
   mutate(OH_percent = `TRUE`/(`FALSE`+`TRUE`)) %>% 
   inner_join(BCA_CZs, by = c("NClimateZone" = "CZ"))
 OH_by_CZ
+bindAll_Overheat_Houses
+
+OH_select <- select(bindAll_Overheat_CZSelected,maxday,Tmean,Tmax,Tmin,
+                    NClimateZone,StarRating,WFR,WallR,CeilingR,RoofR)
+
+OH_select %>% 
+  ggplot(aes(x=Tmax, y = maxday)) +
+  geom_point() 
+
+res1 <- cor.test(OH_select$Tmax, OH_select$maxday,
+                 method = "spearman", conf.level = 0.95,continuity = FALSE)
+res1
 
 
-OH_select <- select(bindAll_Overheat_CZSelected,maxday,
-                    NClimateZone,StarRating,WFR,WallR,CeilingR,RoofR) %>% scale
 
-OH_select_28 <- select(bindAll_Overheat_CZSelected,maxday,
+OH_select_28 <- select(bindAll_Overheat_CZSelected,maxday,Tmean,Tmax,Tmin,
                        NClimateZone,StarRating,WFR,WallR,CeilingR,RoofR) %>% 
                        filter(NClimateZone == 56)
 
-OH_select_28
-OH_select_28_byStar <- OH_select_28 %>% group_by(StarRating) %>% 
+
+
+OH_select_28_2 <- select(OH_select_28,StarRating) %>% 
+  filter(StarRating > 3.0, StarRating < 10.1)
+
+OH_select_28_2 
+#view(OH_select_28_2)
+?cor.test
+res2 <- cor.test(OH_select_28_2$StarRating, OH_select_28_2$maxday,
+                 method = "spearman", conf.level = 0.95,continuity = FALSE)
+res2
+
+
+OH_select_28_byStar <- OH_select_28_2 %>% group_by(StarRating) %>% 
   summarise(maxdaymean = mean(maxday))
 OH_select_28_byStar
 OH_select_28_byStar %>% 
@@ -1266,7 +1288,7 @@ summary(OH_pca)
 plot(OH_pca)
 lm(maxday ~ ., data = OH_select_28) %>% 
   summary()
-OH_01 <- lm(maxday ~ CeilingR, data = OH_select_28)
+OH_01 <- lm(maxday ~ StarRating, data = OH_select_28)
   summary()
 plot(OH_01)
 ?lm
