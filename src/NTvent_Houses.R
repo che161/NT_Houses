@@ -1,4 +1,10 @@
 library(tidyverse)
+# Install
+#install.packages("wesanderson")
+#install.packages("RColorBrewer")
+# Load
+library(wesanderson)
+library("RColorBrewer")
 #CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #CCCCCCCCCCCCCCCCC       Clean data       CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -1041,7 +1047,7 @@ figure6 <-
        x = "Wall construction",
        y = "Number of Dwellings"
   ) +
-  ylim(0, 23000) +
+  ylim(0, 10000) +
   theme(axis.title = element_text(colour = "red", face = "bold", size = 18)) +
   theme(axis.text.x = element_text(angle = 45))
 figure6  
@@ -1172,14 +1178,15 @@ figure4 <- ggplot(
                 col.lab="red", cex.axis = 3, cex.lab = 4)
 ) +
   geom_col(fill = "green", width = 0.5) +
-  geom_text(aes(label = sprintf("%.03f", OH_percent)), colour ="blue", vjust = -0.3, fontface = "bold") +
-  labs(title = "Figure 4. Dwellings fail the overheating criteria in each State",
+  geom_text(aes(label = scales::percent(OH_percent)), colour ="blue", vjust = -0.3, fontface = "bold") +
+  labs(title = "Figure 3. Dwellings fail the overheating criteria in each State",
        x = "State",
        y = "Dwellings fail overheat criteria (%)"
-  ) +
+  ) + 
   ylim(0, 1) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1))+
   theme(axis.title = element_text(colour = "red", face = "bold", size = 18))
-figure4  
+figure4
 ggsave("fig/Figure_4.png", plot = figure4) 
 
 # Plot for Overheating % for each Climate zone
@@ -1289,7 +1296,8 @@ OH_select_28 <- select(OH_select,maxday,CertificateSCool,
                        TotFloorArea,SlabOnGroundArea, SubfloorFloorArea, 
                        NStorey,Class,Tmean,Tmax,Tmin,
                        NClimateZone,StarRating,WFR,WallR,CeilingR,RoofR) %>% 
-                       filter(NClimateZone == 56)
+                       filter(StarRating > 1.0, StarRating < 10.1)  %>% 
+                       filter(NClimateZone == 28)
 
 OH_select_28_2 <- select(OH_select_28,StarRating,maxday) %>% 
   filter(StarRating > 3.0, StarRating < 10.1)
@@ -1302,12 +1310,37 @@ res2 <- cor.test(OH_select_28$StarRating, OH_select_28$maxday,
 res2
 
 
-OH_select_28_byStar <- OH_select_28_2 %>% group_by(StarRating) %>% 
-  summarise(maxdaymean = mean(maxday))
+#OH_select_28_byStar <- OH_select_28_2 %>% group_by(StarRating) %>% 
+#  summarise(maxdaymean = mean(maxday))
 OH_select_28_byStar
 OH_select_28_byStar %>% 
   ggplot(aes(x=StarRating, y = maxdaymean)) +
   geom_point() 
+
+OH_select_28_byStar <- OH_select_28 %>% 
+  write_csv("res/NSW_28.csv")
+OH_select_28_byStar %>% mutate(Class = as.factor(Class))
+
+figure7 <- OH_select_28_byStar %>% 
+  ggplot(aes(x=StarRating, y = maxday)) +
+  geom_point(aes(colour = as.factor(Class)),alpha=0.25,
+             size = 1) +
+  labs(title = "Figure 4. Relationship between overheat and house star rating",
+       x = "Star Rating",
+       y = "Overheating Hours"
+        ) +
+  scale_color_manual(name = "Building Class", values=c("blue", "red"))+
+  theme(axis.title = element_text(colour = "red", face = "bold", size = 18))
+figure7
+ggsave("fig/Figure_7.png", plot = figure7) 
+
+class_t <- t.test(maxday ~ Class, data = OH_select_28_byStar)
+class_t
+
+
+ggplot(OH_select_28_byStar, aes(x = pop, y = lifeExp, colour = continent, size = gdpPercap)) + geom_point() +
+  scale_x_log10()
+
 
 OH_select_28_CeilingR <- OH_select_28 %>% group_by(CeilingR) %>% 
   summarise(maxdaymean = mean(maxday))
@@ -1316,6 +1349,9 @@ OH_select_28_CeilingR %>%
   ggplot(aes(x=CeilingR, y = maxdaymean)) +
   geom_point() +
   geom_smooth(method = "lm")
+
+
+
 
 OH_01_CeilingR <- lm(maxday ~ CeilingR, data = OH_select_28)
 summary()
