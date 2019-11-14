@@ -1,9 +1,10 @@
 ---
-title: A short title that describes your work
+title: Overheating risks in Australia's new housing stock
 subtitle: 
-author:  Your Name
-affiliation: CSIRO Business Unit # Or group/team
-photo: resources/img/photo.jpeg
+author:  Dong Chen
+affiliation: CSIRO Energy # Or group/team
+date: "14/1/2019"
+photo: resources/img/cat.JPG
 
 short_title: Optional short title
 
@@ -26,17 +27,14 @@ library(kableExtra)
 
 
 # Introduction
-Introduce *yourself*. What's your background? Could you code before Data School? What did your 
-daily work pattern look like before Data School? Etc. This section will be placed in 
-an introductory block at the top of the page separate from the rest of the content. Don't change the section title from "Introduction" otherwise this process won't work correctly.
+I am a researcher with years of programming experiences in FORTRAN a computational programming language. Programming, computate simulations, research and communicating with various stakeholders and research partners in residential building energy efficiency are my daily activities. 
 
 # My Project
-Rather than yourself, this is the space to introduce your **project**. What are 
-your goals, what was your data, how do you plan to work with it? Perhaps show some example data if 
-it would help.
+Heat wave has been recognized as one of the major natural hazards which kill more people than any other natural hazards in Australia. Overheating in residential buildings is one of the major causes of heat related death during heat waves. This study investigates the potential overheating risks in the new housing stock across Australia using over 28,000 house designs during 2015 - 2018. Figure 1 shows the number of houses/apartment used in this study in each state and territory.
 
-In order to build this demo poster correctly, you will also need to have installed the `tidyverse`, 
-`gapminder`, and `kableExtra` packages.
+<center><img src="../fig/Figure_1.png" width="650"></center>
+
+Simulations were carried out for all the houses in their local climates using AccuRate which is a house energy rating software developed by CSIRO. The indoor air temperatures in each living room and bedroom in the houses were recorded. The numebr of overheat hours were recorded when the indoor air temperarture in the living room or in the bedroom was higher than the threshholds defined by the Chartered Institution of Building Services Engineers (CIBSE) TM59. If the number of overheat hours in one living room or one bedroom aer above the CIBSE TM59 limits, the house/apartment is considered to fail the overheat criteria set by CIBSE TM59.
 
 ## Preliminary results
 
