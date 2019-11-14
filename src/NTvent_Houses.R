@@ -1024,9 +1024,28 @@ figure1 <- ggplot(
 figure1  
 ggsave("fig/Figure_1.png", plot = figure1)
 
-?sort
-
-
+bindAll_Houses
+# Using ggplot6
+by_wall <- bindAll_Houses %>% semi_join(ClimateZoneSelected, by = "NClimateZone") %>% 
+  group_by(WallType) %>%  
+  summarise(DwellingNo = n() )
+figure6 <-  
+  ggplot(
+  data = by_wall, 
+  mapping = aes(x = WallType, y = DwellingNo,  label = DwellingNo,
+                col.lab="red", cex.axis = 3, cex.lab = 4)
+) +
+  geom_col(fill = "green", width = 0.5) +
+  geom_text(aes(label = DwellingNo), colour ="blue", vjust = -0.5, fontface = "bold") +
+  labs(title = "Figure 2. External wall construction of the houses/apartments",
+       x = "Wall construction",
+       y = "Number of Dwellings"
+  ) +
+  ylim(0, 23000) +
+  theme(axis.title = element_text(colour = "red", face = "bold", size = 18)) +
+  theme(axis.text.x = element_text(angle = 45))
+figure6  
+ggsave("fig/Figure_6.png", plot = figure6)
 
 # Using ggplot2
 figure2 <- ggplot(
