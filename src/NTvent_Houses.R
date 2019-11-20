@@ -1314,12 +1314,12 @@ res2
 #  summarise(maxdaymean = mean(maxday))
 OH_select_28_byStar
 OH_select_28_byStar %>% 
-  ggplot(aes(x=StarRating, y = maxdaymean)) +
+  ggplot(aes(x=StarRating, y = maxday)) +
   geom_point() 
 
 OH_select_28_byStar <- OH_select_28 %>% 
   write_csv("res/NSW_28.csv")
-OH_select_28_byStar %>% mutate(Class = as.factor(Class))
+OH_select_28_byStar 
 
 figure7 <- OH_select_28_byStar %>% 
   ggplot(aes(x=StarRating, y = maxday)) +
@@ -1334,8 +1334,74 @@ figure7 <- OH_select_28_byStar %>%
 figure7
 ggsave("fig/Figure_7.png", plot = figure7) 
 
-class_t <- t.test(maxday ~ Class, data = OH_select_28_byStar)
+class_t_Class <- t.test(maxday ~ Class, data = OH_select_28)
+class_t_Class
+
+figure8 <- OH_select_28_byStar %>% 
+  ggplot(aes(x=StarRating, y = maxday)) +
+  geom_point(aes(colour = as.factor(NStorey)),alpha=0.25,
+             size = 1) +
+  labs(title = "Figure 5. Relationship between overheat and house star rating",
+       x = "Star Rating",
+       y = "Overheating Hours"
+  ) +
+  scale_color_manual(name = "Building Storey", values=c("blue", "red", "green"))+
+  theme(axis.title = element_text(colour = "red", face = "bold", size = 18))
+figure8
+ggsave("fig/Figure_8.png", plot = figure8) 
+
+figure9 <- OH_select_28_byStar %>% 
+  ggplot(aes(x=StarRating, y = maxday)) +
+  geom_point(aes(colour = as.factor(NStorey)),alpha=0.25,
+             size = 1) +
+  labs(title = "Figure 5. Relationship between overheat and house storey number",
+       x = "Star Rating",
+       y = "Overheating Hours"
+  ) +
+  scale_color_manual(name = "Building Storey", values=c("blue", "red", "green"))+
+  theme(axis.title = element_text(colour = "red", face = "bold", size = 18))
+figure9
+ggsave("fig/Figure_9.png", plot = figure9)
+
+
+OH_select_28_NStorey2_3 <- OH_select_28 %>% 
+  filter(NStorey > 1)
+
+figure10 <- OH_select_28_NStorey2_3 %>% 
+  ggplot(aes(x=StarRating, y = maxday)) +
+  geom_point(aes(colour = as.factor(NStorey)),alpha=0.25,
+             size = 1) +
+  labs(title = "Figure 5. Relationship between overheat and house storey number",
+       x = "Star Rating",
+       y = "Overheating Hours"
+  ) +
+  scale_color_manual(name = "Building Storey", values=c("blue", "red", "green"))+
+  theme(axis.title = element_text(colour = "red", face = "bold", size = 18))
+figure10
+ggsave("fig/Figure_10.png", plot = figure10) 
+
+class_t <- t.test(maxday ~ NStorey, data = OH_select_28_NStorey2_3)
 class_t
+
+OH_select_28_NStorey1_2 <- OH_select_28 %>% 
+  filter(NStorey < 3)
+
+figure11 <- OH_select_28_NStorey1_2 %>% 
+  ggplot(aes(x=StarRating, y = maxday)) +
+  geom_point(aes(colour = as.factor(NStorey)),alpha=0.25,
+             size = 1) +
+  labs(title = "Figure 5. Relationship between overheat and house storey number",
+       x = "Star Rating",
+       y = "Overheating Hours"
+  ) +
+  scale_color_manual(name = "Building Storey", values=c("blue", "red", "green"))+
+  theme(axis.title = element_text(colour = "red", face = "bold", size = 18))
+figure11
+ggsave("fig/Figure_11.png", plot = figure11) 
+
+class_t <- t.test(maxday ~ NStorey, data = OH_select_28_NStorey1_2)
+class_t
+
 
 
 ggplot(OH_select_28_byStar, aes(x = pop, y = lifeExp, colour = continent, size = gdpPercap)) + geom_point() +
