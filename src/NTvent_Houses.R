@@ -1337,6 +1337,9 @@ ggsave("fig/Figure_7.png", plot = figure7)
 class_t_Class <- t.test(maxday ~ Class, data = OH_select_28)
 class_t_Class
 
+OH_select_28 %>% group_by(Class) %>% 
+  summarise(meanday = mean(maxday))
+
 figure8 <- OH_select_28_byStar %>% 
   ggplot(aes(x=StarRating, y = maxday)) +
   geom_point(aes(colour = as.factor(NStorey)),alpha=0.25,
