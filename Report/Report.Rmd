@@ -39,11 +39,12 @@ Simulations were carried out for all the houses in their local climates using Ac
 
 ## Preliminary results
 
-Figure 3 shows the percentage of houses/apartment which fails the overheat criteria set by CIBSE TM59 in each state and territory.  Figure 4 shows that the highest overheating hours in a dwellings and the star rating of the dwelling for Richmond, NSW. The general, high star rating houses perform better than low star rated houses. In average overheaing in Class 1 dwellings i.e. standalone houses are predicted to be more severe than apartment, i.e. Class 2 buildings. The performance difference between standalone houses and apartments is statistically significant with p < 0.01 at 95 percent confidence level.
+Figure 3 shows the percentage of houses/apartment which fails the overheat criteria set by CIBSE TM59 in each state and territory.  Figure 4 shows that the highest overheating hours in a dwellings and the star rating of the dwelling for Richmond, NSW. The general, high star rating houses perform better than low star rated houses. In average overheaing in Class 1 dwellings i.e. standalone houses are predicted to be more severe than apartment, i.e. Class 2 buildings. The performance difference between standalone houses and apartments is statistically significant with p < 0.01 at 95 percent confidence level. The results show that overheating in the new Australian homes is alarming and serioius and swift actions are required to fix this issue.
 
-<center> <img src="../fig/Figure_4.png" width="350">,<img src="../fig/Figure_7.png" width="450"> </center>
+<center> <img src="../fig/Figure_4.png" width="550"> </center>
 
-Although it may be not appropriate to use the CIBSE TM59 overheat criteria which was developed in UK, the percentage of house/apartment fails the CIBSE TM59 is alarming and serioius and swift actions are required to fix this issue in Australian homes.
+![](../fig/Figure_7.png){frontpage=}
+
 
 **Images from a file**
 
