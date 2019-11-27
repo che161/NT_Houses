@@ -45,30 +45,20 @@ Figure 3 shows the percentage of houses/apartment which fails the overheat crite
 
 ![](resources/img/Figure_7.png){frontpage=}
 
-
-**Images from a file**
-
-![](resources/img/tidyverse.png){width=100px}
-
 # My Digital Toolbox
 
-What digital tools have you been using in your project? Which ones have you learned since starting 
-Data School?
+What digital tools have you been using in your project? Which ones have you learned since starting Data School?
 
+* FORTRAN was used for generating the source data
 * R - ggplot
-* FORTRAN
+
 
 ## Favourite tool (optional)
 
 Is there a tool/package/function in particular that you've enjoyed using? Give it a special shout out here.
 
-* R -tidyverse
-* R - ggplot
-
-
-![](https://raw.githubusercontent.com/tidyverse/ggplot2/master/man/figures/logo.png){.pull-right width=100px}
-
-No prizes for guessing mine:
+* R - tidyverse
+* R - ggplot for ploting analysis results
 
 # My time went ...
 
